@@ -1,0 +1,13 @@
+#!/bin/sh
+
+if [ ! -e /var/lib/pdns/powerdns.sqlite ]; then
+  echo "Creating sqlite database"
+  sqlite3 /var/lib/pdns/powerdns.sqlite </usr/share/pdns/schema.sqlite3.sql
+fi
+
+echo "Fixing ownership"
+chown -R pdns:pdns /var/lib/pdns
+
+[ x"$1" = x"sh" ] && exec $@
+
+/usr/sbin/pdns_server --chroot=/var/lib/pdns --setgid=pdns --setuid=pdns --guardian=no --daemon=no --disable-syslog --log-timestamp=no --write-pid=no --launch=gsqlite3 $@
